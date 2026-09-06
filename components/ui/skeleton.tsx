@@ -34,3 +34,33 @@ export function TableSkeleton() {
     </div>
   )
 }
+
+export function FormSkeleton({ fields = 4 }: { fields?: number }) {
+  return (
+    <div className="space-y-4">
+      {[...Array(fields)].map((_, i) => (
+        <div key={i} className="space-y-2">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-10 w-full" />
+        </div>
+      ))}
+      <Skeleton className="h-10 w-full mt-6" />
+    </div>
+  )
+}
+
+export function PageSkeleton() {
+  return (
+    <div className="space-y-8">
+      <div className="space-y-2">
+        <Skeleton className="h-8 w-48" />
+        <Skeleton className="h-4 w-64" />
+      </div>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {[...Array(3)].map((_, i) => (
+          <CardSkeleton key={i} />
+        ))}
+      </div>
+    </div>
+  )
+}

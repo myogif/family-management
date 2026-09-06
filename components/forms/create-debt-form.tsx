@@ -65,7 +65,7 @@ export function CreateDebtForm({ familyId, onSuccess }: CreateDebtFormProps) {
           )}
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="type">Type</Label>
             <select
@@ -100,7 +100,7 @@ export function CreateDebtForm({ familyId, onSuccess }: CreateDebtFormProps) {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <Label htmlFor="principalAmount">Principal Amount</Label>
             <Input

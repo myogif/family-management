@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useDocumentActions } from '@/hooks/useDocumentActions'
 import { Button } from '@/components/ui/button'
 import { AlertDialog } from '@/components/ui/alert-dialog'
-import { TableSkeleton } from '@/components/ui/skeleton'
+import { DataTable } from '@/components/ui/data-table'
 import { Toaster, toast } from 'sonner'
 import { formatDate } from '@/lib/utils'
 
@@ -86,91 +86,85 @@ export function DocumentList({ familyId }: DocumentListProps) {
         )}
 
         {/* Documents List */}
-        {loading ? (
-          <TableSkeleton />
-        ) : documents.length === 0 ? (
-          <div className="text-center py-12 border rounded-lg">
-            <p className="text-muted-foreground">No documents yet</p>
+        <DataTable
+          columns={[
+            {
+              header: 'File',
+              accessor: (doc) => (
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">{getFileIcon(doc.file_type)}</span>
+                  <div>
+                    <p className="font-semibold text-sm">{doc.name}</p>
+                    {doc.description && (
+                      <p className="text-xs text-muted-foreground">{doc.description}</p>
+                    )}
+                  </div>
+                </div>
+              ),
+            },
+            {
+              header: 'Type',
+              accessor: (doc) => doc.file_type.split('/')[1]?.toUpperCase() || 'UNKNOWN',
+            },
+            {
+              header: 'Size',
+              accessor: (doc) => formatFileSize(doc.file_size),
+            },
+            {
+              header: 'Uploaded',
+              accessor: (doc) => formatDate(doc.created_at),
+            },
+            {
+              header: 'Actions',
+              accessor: (doc) => (
+                <div className="flex gap-2 justify-end">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleDownload(doc.id, doc.name)}
+                    disabled={loading}
+                  >
+                    Download
+                  </Button>
+                  <AlertDialog
+                    open={showDeleteDialog && deleteId === doc.id}
+                    onOpenChange={(open) => {
+                      if (open) {
+                        setDeleteId(doc.id)
+                      }
+                      setShowDeleteDialog(open)
+                    }}
+                    title="Delete Document?"
+                    description="This action cannot be undone. The file will be permanently deleted."
+                    onConfirm={handleDelete}
+                    isLoading={loading}
+                    isDangerous
+                  >
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => {
+                        setDeleteId(doc.id)
+                        setShowDeleteDialog(true)
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  </AlertDialog>
+                </div>
+              ),
+            },
+          ]}
+          data={documents}
+          keyExtractor={(doc) => doc.id}
+          isLoading={loading}
+          emptyMessage="No documents yet"
+          emptyAction={
             <p className="text-sm text-muted-foreground mt-2">
               Upload family documents like certificates, bills, or photos
             </p>
-          </div>
-        ) : (
-          <div className="border rounded-lg overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-muted">
-                <tr>
-                  <th className="text-left p-4 text-sm font-medium">File</th>
-                  <th className="text-left p-4 text-sm font-medium">Type</th>
-                  <th className="text-right p-4 text-sm font-medium">Size</th>
-                  <th className="text-left p-4 text-sm font-medium">Uploaded</th>
-                  <th className="text-right p-4 text-sm font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {documents.map((doc) => (
-                  <tr key={doc.id} className="border-t hover:bg-muted/50">
-                    <td className="p-4">
-                      <div className="flex items-center gap-3">
-                        <span className="text-2xl">{getFileIcon(doc.file_type)}</span>
-                        <div>
-                          <p className="font-semibold text-sm">{doc.name}</p>
-                          {doc.description && (
-                            <p className="text-xs text-muted-foreground">{doc.description}</p>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="p-4 text-sm text-muted-foreground">
-                      {doc.file_type.split('/')[1]?.toUpperCase() || 'UNKNOWN'}
-                    </td>
-                    <td className="p-4 text-sm text-right">
-                      {formatFileSize(doc.file_size)}
-                    </td>
-                    <td className="p-4 text-sm text-muted-foreground">
-                      {formatDate(doc.created_at)}
-                    </td>
-                    <td className="p-4 text-sm text-right space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDownload(doc.id, doc.name)}
-                        disabled={loading}
-                      >
-                        Download
-                      </Button>
-                      <AlertDialog
-                        open={showDeleteDialog && deleteId === doc.id}
-                        onOpenChange={(open) => {
-                          if (open) {
-                            setDeleteId(doc.id)
-                          }
-                          setShowDeleteDialog(open)
-                        }}
-                        title="Delete Document?"
-                        description="This action cannot be undone. The file will be permanently deleted."
-                        onConfirm={handleDelete}
-                        isLoading={loading}
-                        isDangerous
-                      >
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => {
-                            setDeleteId(doc.id)
-                            setShowDeleteDialog(true)
-                          }}
-                        >
-                          Delete
-                        </Button>
-                      </AlertDialog>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+          }
+        />
       </div>
       <Toaster />
     </>

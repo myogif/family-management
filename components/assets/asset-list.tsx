@@ -6,7 +6,7 @@ import { formatCurrency, formatDate } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { AlertDialog } from '@/components/ui/alert-dialog'
-import { TableSkeleton } from '@/components/ui/skeleton'
+import { DataTable } from '@/components/ui/data-table'
 import { Toaster, toast } from 'sonner'
 import Link from 'next/link'
 
@@ -62,84 +62,76 @@ export function AssetList({ familyId }: AssetListProps) {
         </div>
 
         {/* Assets List */}
-        {loading ? (
-          <TableSkeleton />
-        ) : assets.length === 0 ? (
-          <div className="text-center py-12 border rounded-lg">
-            <p className="text-muted-foreground">No assets yet</p>
+        <DataTable
+          columns={[
+            { header: 'Name', accessor: (asset) => asset.name, cellClassName: 'font-semibold' },
+            {
+              header: 'Category',
+              accessor: (asset) => <Badge variant="outline">{asset.category}</Badge>,
+            },
+            {
+              header: 'Purchase Value',
+              accessor: (asset) => formatCurrency(asset.purchase_value),
+            },
+            {
+              header: 'Current Value',
+              accessor: (asset) => formatCurrency(asset.current_value),
+              cellClassName: 'font-semibold',
+            },
+            {
+              header: 'Date',
+              accessor: (asset) => formatDate(asset.purchase_date),
+            },
+            {
+              header: 'Actions',
+              accessor: (asset) => (
+                <div className="flex gap-2 justify-end">
+                  <Link href={`/families/${familyId}/assets/${asset.id}/edit`}>
+                    <Button variant="outline" size="sm">
+                      Edit
+                    </Button>
+                  </Link>
+                  <AlertDialog
+                    open={showDeleteDialog && deleteId === asset.id}
+                    onOpenChange={(open) => {
+                      if (open) {
+                        setDeleteId(asset.id)
+                      }
+                      setShowDeleteDialog(open)
+                    }}
+                    title="Delete Asset?"
+                    description="This action cannot be undone."
+                    onConfirm={handleDelete}
+                    isLoading={loading}
+                    isDangerous
+                  >
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => {
+                        setDeleteId(asset.id)
+                        setShowDeleteDialog(true)
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  </AlertDialog>
+                </div>
+              ),
+            },
+          ]}
+          data={assets}
+          keyExtractor={(asset) => asset.id}
+          isLoading={loading}
+          emptyMessage="No assets yet"
+          emptyAction={
             <Link href={`/families/${familyId}/assets/create`}>
-              <Button variant="outline" size="sm" className="mt-4">
+              <Button variant="outline" size="sm">
                 Add Asset
               </Button>
             </Link>
-          </div>
-        ) : (
-          <div className="border rounded-lg overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-muted">
-                <tr>
-                  <th className="text-left p-4 text-sm font-medium">Name</th>
-                  <th className="text-left p-4 text-sm font-medium">Category</th>
-                  <th className="text-right p-4 text-sm font-medium">Purchase Value</th>
-                  <th className="text-right p-4 text-sm font-medium">Current Value</th>
-                  <th className="text-left p-4 text-sm font-medium">Date</th>
-                  <th className="text-right p-4 text-sm font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {assets.map((asset) => (
-                  <tr key={asset.id} className="border-t hover:bg-muted/50">
-                    <td className="p-4 text-sm font-semibold">{asset.name}</td>
-                    <td className="p-4 text-sm">
-                      <Badge variant="outline">{asset.category}</Badge>
-                    </td>
-                    <td className="p-4 text-sm text-right">
-                      {formatCurrency(asset.purchase_value)}
-                    </td>
-                    <td className="p-4 text-sm text-right font-semibold">
-                      {formatCurrency(asset.current_value)}
-                    </td>
-                    <td className="p-4 text-sm text-muted-foreground">
-                      {formatDate(asset.purchase_date)}
-                    </td>
-                    <td className="p-4 text-sm text-right space-x-2">
-                      <Link href={`/families/${familyId}/assets/${asset.id}/edit`}>
-                        <Button variant="outline" size="sm">
-                          Edit
-                        </Button>
-                      </Link>
-                      <AlertDialog
-                        open={showDeleteDialog && deleteId === asset.id}
-                        onOpenChange={(open) => {
-                          if (open) {
-                            setDeleteId(asset.id)
-                          }
-                          setShowDeleteDialog(open)
-                        }}
-                        title="Delete Asset?"
-                        description="This action cannot be undone."
-                        onConfirm={handleDelete}
-                        isLoading={loading}
-                        isDangerous
-                      >
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => {
-                            setDeleteId(asset.id)
-                            setShowDeleteDialog(true)
-                          }}
-                        >
-                          Delete
-                        </Button>
-                      </AlertDialog>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+          }
+        />
       </div>
       <Toaster />
     </>

@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Toaster, toast } from 'sonner'
+import { MobileNav } from './mobile-nav'
 
 export function DashboardNav() {
   const { user } = useAuth()
@@ -23,8 +24,9 @@ export function DashboardNav() {
   return (
     <nav className="border-b">
       <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
-        <div className="flex items-center gap-8">
-          <Link href="/dashboard" className="text-xl font-bold">
+        <div className="flex items-center gap-4 md:gap-8">
+          <MobileNav />
+          <Link href="/dashboard" className="text-lg md:text-xl font-bold">
             Family Management
           </Link>
           <div className="hidden md:flex gap-4">
@@ -41,13 +43,16 @@ export function DashboardNav() {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-sm text-muted-foreground">{user?.email}</span>
+          <span className="hidden sm:block text-sm text-muted-foreground truncate max-w-[150px]">
+            {user?.email}
+          </span>
           <Button
             variant="outline"
             size="sm"
             onClick={handleLogout}
           >
-            Logout
+            <span className="hidden sm:inline">Logout</span>
+            <span className="sm:hidden">Exit</span>
           </Button>
         </div>
       </div>

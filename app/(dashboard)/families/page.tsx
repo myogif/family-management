@@ -67,7 +67,7 @@ export default function FamiliesPage() {
                     <p className="text-muted-foreground text-sm mt-2">{family.description}</p>
                   )}
                   <p className="text-xs text-muted-foreground mt-4">
-                    Created {new Date(family.created_at).toLocaleDateString()}
+                    Created {new Date(family.createdAt).toLocaleDateString()}
                   </p>
                 </div>
               </Link>

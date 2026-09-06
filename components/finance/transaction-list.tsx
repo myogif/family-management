@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Badge } from '@/components/ui/badge'
 import { AlertDialog } from '@/components/ui/alert-dialog'
-import { TableSkeleton } from '@/components/ui/skeleton'
+import { DataTable } from '@/components/ui/data-table'
 import { Toaster, toast } from 'sonner'
 import Link from 'next/link'
 
@@ -130,82 +130,74 @@ export function TransactionList({ familyId }: TransactionListProps) {
         </div>
 
         {/* Transactions List */}
-        {loading ? (
-          <TableSkeleton />
-        ) : transactions.length === 0 ? (
-          <div className="text-center py-12 border rounded-lg">
-            <p className="text-muted-foreground">No transactions found</p>
+        <DataTable
+          columns={[
+            { header: 'Date', accessor: (tx) => formatDate(tx.transaction_date) },
+            { header: 'Description', accessor: (tx) => tx.description || '-' },
+            { header: 'Category', accessor: (tx) => tx.categories?.name || '-' },
+            {
+              header: 'Type',
+              accessor: (tx) => (
+                <Badge variant={tx.type === 'income' ? 'secondary' : 'destructive'}>
+                  {tx.type}
+                </Badge>
+              ),
+            },
+            {
+              header: 'Amount',
+              accessor: (tx) => formatCurrency(tx.amount),
+              cellClassName: 'font-semibold',
+            },
+            {
+              header: 'Actions',
+              accessor: (tx) => (
+                <div className="flex gap-2 justify-end">
+                  <Link href={`/families/${familyId}/finance/transactions/${tx.id}/edit`}>
+                    <Button variant="outline" size="sm">
+                      Edit
+                    </Button>
+                  </Link>
+                  <AlertDialog
+                    open={showDeleteDialog && deleteId === tx.id}
+                    onOpenChange={(open) => {
+                      if (open) {
+                        setDeleteId(tx.id)
+                      }
+                      setShowDeleteDialog(open)
+                    }}
+                    title="Delete Transaction?"
+                    description="This action cannot be undone."
+                    onConfirm={handleDelete}
+                    isLoading={loading}
+                    isDangerous
+                  >
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={() => {
+                        setDeleteId(tx.id)
+                        setShowDeleteDialog(true)
+                      }}
+                    >
+                      Delete
+                    </Button>
+                  </AlertDialog>
+                </div>
+              ),
+            },
+          ]}
+          data={transactions}
+          keyExtractor={(tx) => tx.id}
+          isLoading={loading}
+          emptyMessage="No transactions found"
+          emptyAction={
             <Link href={`/families/${familyId}/finance/create`}>
-              <Button variant="outline" size="sm" className="mt-4">
+              <Button variant="outline" size="sm">
                 Create Transaction
               </Button>
             </Link>
-          </div>
-        ) : (
-          <div className="border rounded-lg overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-muted">
-                <tr>
-                  <th className="text-left p-4 text-sm font-medium">Date</th>
-                  <th className="text-left p-4 text-sm font-medium">Description</th>
-                  <th className="text-left p-4 text-sm font-medium">Category</th>
-                  <th className="text-left p-4 text-sm font-medium">Type</th>
-                  <th className="text-right p-4 text-sm font-medium">Amount</th>
-                  <th className="text-right p-4 text-sm font-medium">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {transactions.map((tx) => (
-                  <tr key={tx.id} className="border-t hover:bg-muted/50">
-                    <td className="p-4 text-sm">{formatDate(tx.transaction_date)}</td>
-                    <td className="p-4 text-sm">{tx.description || '-'}</td>
-                    <td className="p-4 text-sm">{tx.categories?.name}</td>
-                    <td className="p-4 text-sm">
-                      <Badge variant={tx.type === 'income' ? 'secondary' : 'destructive'}>
-                        {tx.type}
-                      </Badge>
-                    </td>
-                    <td className="p-4 text-sm text-right font-semibold">
-                      {formatCurrency(tx.amount)}
-                    </td>
-                    <td className="p-4 text-sm text-right space-x-2">
-                      <Link href={`/families/${familyId}/finance/transactions/${tx.id}/edit`}>
-                        <Button variant="outline" size="sm">
-                          Edit
-                        </Button>
-                      </Link>
-                      <AlertDialog
-                        open={showDeleteDialog && deleteId === tx.id}
-                        onOpenChange={(open) => {
-                          if (open) {
-                            setDeleteId(tx.id)
-                          }
-                          setShowDeleteDialog(open)
-                        }}
-                        title="Delete Transaction?"
-                        description="This action cannot be undone."
-                        onConfirm={handleDelete}
-                        isLoading={loading}
-                        isDangerous
-                      >
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => {
-                            setDeleteId(tx.id)
-                            setShowDeleteDialog(true)
-                          }}
-                        >
-                          Delete
-                        </Button>
-                      </AlertDialog>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
+          }
+        />
 
         {/* Pagination */}
         {totalPages > 1 && (
